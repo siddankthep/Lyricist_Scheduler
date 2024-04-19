@@ -32,6 +32,19 @@ Follow the [Python Quickstart](https://developers.google.com/calendar/api/quicks
 
 The Google client library is already included in `requirements.txt` so you can skip that part.
 
-> After downloading the JSON file and saving it as `credentials.json`, you are ready to insert your schedule to Google Calendar.
+**After downloading the JSON file and saving it as `credentials.json`, you are ready to insert your schedule to Google Calendar.**
 
 # Usage
+
+Make sure that you have already had your `credentials.json` file in the directory.
+
+In [`schedule.py`](/schedule.py), change the following fields:
+
+- `sheet_url`: the url to your Google Spreadsheet
+- `calendar_id`: the id of the calendar that you would like to create events on. You can access the id by using the `all_calendar` dictionary, e.g `calendar_id = all_calendars["Your calendar name"]`
+
+After, simply run the python file. You will be prompted to authorize using your Google Account. Happy scheduling!
+
+# TODO
+
+- [] Update the flatten_schedule function for flexible spreadsheets (different shifts)

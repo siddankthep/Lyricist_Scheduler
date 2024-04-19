@@ -2,6 +2,29 @@ import pandas as pd
 import datetime
 
 
+def get_sheet_url(sheet_raw_url: str) -> str:
+    sheet_id = sheet_raw_url.split("/")[5]
+    return f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=xlsx"
+
+
+def get_all_calendar_ids(service) -> dict:
+    """Returns a dictionary of all the calendars in the user's account.
+
+    Returns:
+        dict: Keys are the calendar names and values are the calendar IDs.
+    """
+    page_token = None
+    calendar_dict = {}
+    while True:
+        calendar_list = service.calendarList().list(pageToken=page_token).execute()
+        for calendar_list_entry in calendar_list["items"]:
+            calendar_dict[calendar_list_entry["summary"]] = calendar_list_entry["id"]
+        page_token = calendar_list.get("nextPageToken")
+        if not page_token:
+            break
+    return calendar_dict
+
+
 class WorkDay:
     def __init__(self, staff, day, date, shift, location):
         self.staff = staff
@@ -108,7 +131,10 @@ def create_event(work_day: WorkDay, service, calendar_id, attendees=False):
     created_events = service.events().list(calendarId=calendar_id).execute()
 
     for event in created_events["items"]:
-        created_events_description.append(event["description"])
+        try:
+            created_events_description.append(event["description"])
+        except KeyError:
+            continue
 
     if work_day.__str__() not in created_events_description:
         if attendees:
@@ -124,9 +150,9 @@ def create_event(work_day: WorkDay, service, calendar_id, attendees=False):
                     "dateTime": work_day.end,
                     "timeZone": "Asia/Bangkok",
                 },
-                "attendees": [
-                    {"email": "anhthy7102003@gmail.com"},
-                ],
+                # "attendees": [
+                #     {"email": "test@gmail.com"},
+                # ],
                 "reminders": {
                     "useDefault": False,
                     "overrides": [
@@ -139,7 +165,6 @@ def create_event(work_day: WorkDay, service, calendar_id, attendees=False):
         else:
             event = {
                 "summary": work_day.staff,
-                # "id": work_day.id,
                 "location": work_day.location,
                 "description": work_day.__str__(),
                 "start": {
